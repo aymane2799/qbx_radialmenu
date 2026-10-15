@@ -51,6 +51,15 @@ end
 ------ Functions ------
 -----------------------
 
+-- Atlas: an item's label comes from the locale files by its id (menu.<id>), so it follows the language the
+-- player chose in ox_lib. An item without a key keeps the label it was given, which covers items added by
+-- other resources through AddOption.
+local function translate(tbl)
+    local key = ('menu.%s'):format(tbl.id)
+    local text = locale(key)
+    return text ~= key and text or tbl.label
+end
+
 local function convert(tbl)
     if tbl.items then
         local items = {}
@@ -65,7 +74,7 @@ local function convert(tbl)
 
         return {
             id = tbl.id,
-            label = tbl.label,
+            label = translate(tbl),
             icon = tbl.icon,
             menu = tbl.id .. 'Menu'
         }
@@ -90,7 +99,7 @@ local function convert(tbl)
 
     return {
         id = tbl.id,
-        label = tbl.label,
+        label = translate(tbl),
         icon = tbl.icon,
         onSelect = tbl.onSelect or function()
             if action then
@@ -128,6 +137,7 @@ function setupVehicleMenu(seat)
     end
 
     if config.vehicleSeats and seat then
+        config.vehicleSeats.label = translate(config.vehicleSeats)
         vehicleItems[#vehicleItems + 1] = config.vehicleSeats
     end
 
@@ -166,6 +176,21 @@ local function setupRadialMenu()
         items = config.jobItems[QBX.PlayerData.job.name]
     }))
 end
+
+-- Atlas: rebuild this resource's own items when the player changes the language in ox_lib. ox_lib reloads
+-- the strings in its own handler for the same event, registered before this one.
+AddEventHandler('ox_lib:setLocale', function()
+    if not LocalPlayer.state.isLoggedIn then
+        return
+    end
+    for _, v in pairs(config.menuItems) do
+        lib.removeRadialItem(v.id)
+    end
+    lib.removeRadialItem('vehicle')
+    lib.removeRadialItem('gangInteractions')
+    lib.removeRadialItem('jobInteractions')
+    setupRadialMenu()
+end)
 
 local function isPolice()
     return QBX.PlayerData.job.type == 'leo' and QBX.PlayerData.job.onduty

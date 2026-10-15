@@ -734,7 +734,7 @@ return {
         reset = {
             Func = function()
                 if not ResetClothing(true) then
-                    Notify('Nothing To Reset', 'error')
+                    Notify(locale('atlas.nothing_to_reset'), 'error')
                 end
             end,
             Sprite = 'reset',
