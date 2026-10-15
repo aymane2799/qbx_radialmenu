@@ -913,7 +913,7 @@ RegisterNetEvent('qb-radialmenu:ToggleProps', ToggleProps)
 for k,v in pairs(config.clothingCommands) do
 	RegisterCommand(k, v.Func, false)
 	--log("Created /"..k.." ("..v.Desc..")") -- Useful for translation checking.
-	TriggerEvent("chat:addSuggestion", "/"..k, v.Desc)
+	TriggerEvent("chat:addSuggestion", "/"..k, locale("commands."..k) ~= "commands."..k and locale("commands."..k) or v.Desc) -- Atlas: description from the locale files
 end
 
 AddEventHandler('onResourceStop', function(resource) -- Mostly for development, restart the resource and it will put all the clothes back on.
